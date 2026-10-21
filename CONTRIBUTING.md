@@ -154,6 +154,8 @@ Before submitting a pull request, run the following validation suites:
 - **Classic Menu Tests**:
   After building, run `./evals/shell/test.ps1` on x64 and Arm64 Windows. It loads the DLL in a process matching Explorer, creates the COM handler, and tests single and multiple selections. Pass `-ShellDll "$env:LOCALAPPDATA\Flect\FlectShell.dll" -InvokeWorker` to test the installed handler launching the x64 worker too. Use a test account with the JSON formatting menu enabled.
 
+  These probes do not drive the actual Explorer UI. Before claiming that shell integration works, also follow the [real Explorer verification steps](evals/shell/README.md). An installer launched from a virtualized host can register the handler in a view that the desktop Explorer cannot see, even when the direct COM tests pass.
+
 ---
 
 ## Core Invariants and Guidelines
