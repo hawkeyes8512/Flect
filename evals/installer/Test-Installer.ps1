@@ -20,6 +20,21 @@ $version = $group.BrandVersion
 
 $app = Join-Path $env:LOCALAPPDATA $brand
 if ($InstallDirectory) { $app = [IO.Path]::GetFullPath($InstallDirectory) }
+$app = [IO.Path]::GetFullPath($app)
+$ancestor = $app
+while ($ancestor) {
+    if (Test-Path -LiteralPath $ancestor) {
+        $item = Get-Item -LiteralPath $ancestor -Force
+        if (-not $item.PSIsContainer -or ($item.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+            throw "Refusing installer test directory: '$ancestor' must be an ordinary directory, not a file or reparse point."
+        }
+    }
+    $parent = [IO.Directory]::GetParent($ancestor)
+    $ancestor = if ($parent) { $parent.FullName } else { $null }
+}
+if ((Test-Path -LiteralPath $app) -and (Get-ChildItem -LiteralPath $app -Force | Select-Object -First 1)) {
+    throw "Refusing installer test directory: '$app' is not empty. Use a new, dedicated test directory."
+}
 $classes = 'HKCU:\Software\Classes'
 $clsidKey = "$classes\CLSID\$clsid"
 $handlerKeys = @("$classes\*\shellex\ContextMenuHandlers\$brand", "$classes\Directory\shellex\ContextMenuHandlers\$brand")
@@ -46,8 +61,7 @@ function Get-DefaultValue([string]$Key) {
 
 function Invoke-Setup([string]$Name) {
     $log = Join-Path $LogDirectory "$Name.log"
-    $arguments = @('/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', "/LOG=`"$log`"")
-    if ($InstallDirectory) { $arguments += "/DIR=`"$app`"" }
+    $arguments = @('/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', "/LOG=`"$log`"", "/DIR=`"$app`"")
     $process = Start-Process -FilePath $Installer -ArgumentList $arguments -Wait -PassThru
     Assert-That ($process.ExitCode -eq 0) "$Name finished with exit code 0 (got $($process.ExitCode))"
 }

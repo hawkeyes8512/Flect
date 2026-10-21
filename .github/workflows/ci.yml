@@ -105,6 +105,10 @@ jobs:
           name: dist-${{ matrix.os }}
           path: dist
 
+      - name: Test installer directory safety checks
+        shell: pwsh
+        run: ./evals/installer/Test-InstallDirectory.ps1
+
       - name: Install Inno Setup
         run: choco install innosetup --version 6.7.1 --no-progress -y
 

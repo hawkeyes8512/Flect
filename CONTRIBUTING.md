@@ -156,6 +156,9 @@ Before submitting a pull request, run the following validation suites:
 
   These probes do not drive the actual Explorer UI. Before claiming that shell integration works, also follow the [real Explorer verification steps](evals/shell/README.md). An installer launched from a virtualized host can register the handler in a view that the desktop Explorer cannot see, even when the direct COM tests pass.
 
+- **Installer Test Safety**:
+  Run `./evals/installer/Test-InstallDirectory.ps1` to check that unsafe destinations are rejected before any installation or registry mutation. Installer round-trip tests modify Flect's registration and uninstall it, so use a disposable test account. `Test-Installer.ps1 -InstallDirectory` requires a new or empty ordinary directory and rejects reparse points in its path. Use a fresh destination for each round trip and store logs outside it.
+
 ---
 
 ## Core Invariants and Guidelines
